@@ -1,5 +1,15 @@
-const backendHost = import.meta.env.VITE_BACKEND_URL ? import.meta.env.VITE_BACKEND_URL.replace(/\/+$/, '') : '';
-const API_BASE = `${backendHost}/api`;
+// Dynamic backend host resolution with seamless production fallback
+const getBackendHost = () => {
+  if (import.meta.env.VITE_BACKEND_URL) {
+    return import.meta.env.VITE_BACKEND_URL.replace(/\/+$/, '');
+  }
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return 'https://oibsip-webdev-l3-pizza-delivery-full.onrender.com';
+  }
+  return '';
+};
+
+const API_BASE = `${getBackendHost()}/api`;
 
 /**
  * Enhanced fetch wrapper that automatically handles:

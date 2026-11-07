@@ -17,7 +17,7 @@ export default function Dashboard() {
     api.getPizzas()
       .then((data) => {
         if (isMounted) {
-          setPizzas(data || []);
+          setPizzas(Array.isArray(data) ? data : []);
           setLoading(false);
         }
       })
@@ -87,7 +87,7 @@ export default function Dashboard() {
             <Loader2 size={36} className="animate-spin" color="var(--color-primary)" style={{ margin: '0 auto 12px' }} />
             <p style={{ color: 'var(--color-text-muted)' }}>Loading gourmet catalog...</p>
           </div>
-        ) : pizzas.length === 0 ? (
+        ) : !Array.isArray(pizzas) || pizzas.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 0', background: '#fff', borderRadius: 'var(--radius-lg)' }}>
             <UtensilsCrossed size={48} color="var(--color-text-muted)" style={{ margin: '0 auto 12px' }} />
             <p style={{ fontWeight: '600' }}>No signature pizzas available currently.</p>

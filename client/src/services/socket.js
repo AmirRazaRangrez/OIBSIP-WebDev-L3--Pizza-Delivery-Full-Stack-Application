@@ -5,8 +5,16 @@ let socket = null;
 
 export function getSocket() {
   if (!socket) {
-    const socketTarget = import.meta.env.VITE_BACKEND_URL || window.location.origin;
-    socket = io(socketTarget, {
+    let socketTarget = import.meta.env.VITE_BACKEND_URL;
+    if (!socketTarget && typeof window !== 'undefined') {
+      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        socketTarget = 'https://oibsip-webdev-l3-pizza-delivery-full.onrender.com';
+      } else {
+        socketTarget = window.location.origin;
+      }
+    }
+
+    socket = io(socketTarget || window.location.origin, {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
       autoConnect: true,
