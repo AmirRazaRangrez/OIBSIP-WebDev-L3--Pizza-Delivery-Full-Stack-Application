@@ -214,3 +214,4 @@ This project is architected for clean monorepo deployment:
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE) — free for educational and commercial exploration.
+

@@ -7,8 +7,10 @@ const dns = require('dns');
 // Overrides default Windows OS resolver to avoid querySrv ECONNREFUSED bug.
 // =========================================================================
 try {
-  dns.setServers(['8.8.8.8', '1.1.1.1']);
-  console.log('[Database] DNS servers configured for MongoDB SRV resolution: [8.8.8.8, 1.1.1.1]');
+  if (process.platform === 'win32') {
+    dns.setServers(['8.8.8.8', '1.1.1.1']);
+    console.log('[Database] DNS servers configured for MongoDB SRV resolution (Windows): [8.8.8.8, 1.1.1.1]');
+  }
 } catch (dnsErr) {
   console.warn('[Database] Warning: Failed to set custom DNS servers:', dnsErr.message);
 }
@@ -97,7 +99,7 @@ const connectDB = async (customUri = null) => {
     }
 
     if (process.env.NODE_ENV === 'production') {
-      process.exit(1);
+      console.warn('[Database] Running in production with degraded DB connection. Background retry active.');
     }
     
     return mongoose.connection;
