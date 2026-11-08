@@ -62,8 +62,18 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // =========================================================================
-// HEALTH CHECK ROUTE
+// ROOT API STATUS & HEALTH ROUTE
 // =========================================================================
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'online',
+    service: 'Zomato Pizza Delivery & Inventory Engine',
+    health: '/api/health',
+    pizzas: '/api/pizzas',
+    version: '1.0.0'
+  });
+});
+
 app.get('/api/health', (req, res) => {
   const mongoose = require('mongoose');
   const dbStates = {
@@ -134,6 +144,11 @@ app.use(errorHandler);
 if (process.env.NODE_ENV !== 'test') {
   connectDB().then(async () => {
     try {
+      const mongoose = require('mongoose');
+      if (mongoose.connection.readyState !== 1) {
+        console.warn('[Server] Notice: MongoDB not connected. Auto-seeding deferred.');
+        return;
+      }
       const Inventory = require('./models/Inventory');
       const count = await Inventory.countDocuments();
       if (count === 0) {
@@ -152,11 +167,16 @@ if (process.env.NODE_ENV !== 'test') {
 const PORT = process.env.PORT || 5000;
 if (process.env.NODE_ENV !== 'test') {
   cronService.startCronJob();
-  server.listen(PORT, () => {
+  
+  server.on('error', (err) => {
+    console.error('[Server] Fatal server error:', err.message);
+  });
+
+  server.listen(PORT, '0.0.0.0', () => {
     console.log(`=======================================================`);
-    console.log(`🍕 Pizza Delivery Server active on port ${PORT}`);
+    console.log(`🍕 Pizza Delivery Server active on 0.0.0.0:${PORT}`);
     console.log(`🚀 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🌐 Health check: http://localhost:${PORT}/api/health`);
+    console.log(`🌐 Health check: http://0.0.0.0:${PORT}/api/health`);
     console.log(`=======================================================`);
   });
 }

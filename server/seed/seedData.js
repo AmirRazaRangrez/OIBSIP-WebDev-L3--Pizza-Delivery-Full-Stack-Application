@@ -1,7 +1,9 @@
 const dns = require('dns');
 // Enforce Google/Cloudflare DNS servers on Windows to prevent Atlas SRV resolution failures
 try {
-  dns.setServers(['8.8.8.8', '1.1.1.1']);
+  if (process.platform === 'win32') {
+    dns.setServers(['8.8.8.8', '1.1.1.1']);
+  }
 } catch (e) {
   console.warn('DNS server override failed, using default OS resolver');
 }
