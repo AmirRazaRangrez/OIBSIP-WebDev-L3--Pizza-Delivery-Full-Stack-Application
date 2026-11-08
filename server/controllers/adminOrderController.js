@@ -8,6 +8,9 @@ const { broadcastOrderStatus } = require('../socket');
  */
 const getAllOrders = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json([]);
+    }
     const filter = {};
     if (req.query.status) {
       filter.orderStatus = req.query.status;

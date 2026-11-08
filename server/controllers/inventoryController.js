@@ -1,4 +1,12 @@
+const mongoose = require('mongoose');
 const Inventory = require('../models/Inventory');
+const { inventoryData } = require('../seed/seedData');
+
+const fallbackInventory = inventoryData.map((item, idx) => ({
+  ...item,
+  _id: `6610000000000000000000${(idx + 10).toString(16)}`,
+  inventoryId: `6610000000000000000000${(idx + 10).toString(16)}`
+}));
 
 /**
  * @desc    Get all inventory items (optional filtering by category or inStock)
@@ -7,6 +15,12 @@ const Inventory = require('../models/Inventory');
  */
 const getAllInventory = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      const { category } = req.query;
+      const items = category ? fallbackInventory.filter(i => i.category === category) : fallbackInventory;
+      return res.status(200).json(items);
+    }
+
     const { category, inStock } = req.query;
     const filter = {};
 
@@ -31,6 +45,17 @@ const getAllInventory = async (req, res) => {
  */
 const getGroupedInventory = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      const grouped = { bases: [], sauces: [], cheeses: [], veggies: [] };
+      fallbackInventory.forEach((item) => {
+        if (item.category === 'base') grouped.bases.push(item);
+        else if (item.category === 'sauce') grouped.sauces.push(item);
+        else if (item.category === 'cheese') grouped.cheeses.push(item);
+        else if (item.category === 'veggie') grouped.veggies.push(item);
+      });
+      return res.status(200).json(grouped);
+    }
+
     const items = await Inventory.find({}).sort({ name: 1 });
 
     const grouped = {

@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const emailService = require('../services/emailService');
 
@@ -247,6 +248,14 @@ exports.login = async (req, res, next) => {
     }
 
     const normalizedEmail = email.toLowerCase().trim();
+
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database is currently connecting. Please wait a few seconds or verify MONGODB_URI.'
+      });
+    }
+
     // Query user and explicitly select password field
     const user = await User.findOne({ email: normalizedEmail }).select('+password');
 
