@@ -45,7 +45,11 @@ const connectDB = async (customUri = null) => {
   // Handle unreplaced Atlas placeholder
   if (uri.includes('<db_username>')) {
     console.warn('[Database] Warning: MONGODB_URI contains unconfigured placeholder "<db_username>".');
-    console.log('[Database] Activating MongoMemoryServer fallback...');
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('[Database] Production mode: Operating in high-availability offline mode until Atlas credentials are provided in Render environment.');
+      return mongoose.connection;
+    }
+    console.log('[Database] Activating MongoMemoryServer fallback for local development...');
     try {
       const { MongoMemoryServer } = require('mongodb-memory-server');
       const mongod = await MongoMemoryServer.create();
@@ -70,8 +74,8 @@ const connectDB = async (customUri = null) => {
   } catch (error) {
     console.error(`[Database] Initial MongoDB connection failed: ${error.message}`);
     
-    // If Atlas failed or in fallback mode, attempt MongoMemoryServer if not already active
-    if (!global.__MONGOINSTANCE) {
+    // In local development, attempt MongoMemoryServer if Atlas failed
+    if (process.env.NODE_ENV !== 'production' && !global.__MONGOINSTANCE) {
       console.log('[Database] Attempting MongoMemoryServer fallback after connection failure...');
       try {
         const { MongoMemoryServer } = require('mongodb-memory-server');
