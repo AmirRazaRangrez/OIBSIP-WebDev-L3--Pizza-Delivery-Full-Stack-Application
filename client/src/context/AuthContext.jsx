@@ -57,7 +57,22 @@ export function AuthProvider({ children }) {
   };
 
   const addToCart = (item) => {
-    setCart((prev) => [...prev, item]);
+    setCart((prev) => {
+      if (item.type === 'preconfigured') {
+        const existingIdx = prev.findIndex(
+          (cartItem) => cartItem.type === 'preconfigured' && cartItem.pizzaId === item.pizzaId
+        );
+        if (existingIdx !== -1) {
+          const updated = [...prev];
+          updated[existingIdx] = {
+            ...updated[existingIdx],
+            quantity: (updated[existingIdx].quantity || 1) + (item.quantity || 1)
+          };
+          return updated;
+        }
+      }
+      return [...prev, item];
+    });
   };
 
   const removeFromCart = (index) => {

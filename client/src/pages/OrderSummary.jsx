@@ -13,9 +13,7 @@ export default function OrderSummary() {
   const navigate = useNavigate();
 
   const subtotal = cart.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
-  const tax = Math.round(subtotal * 0.05); // 5% GST
-  const deliveryFee = subtotal > 500 ? 0 : 40;
-  const grandTotal = subtotal + tax + deliveryFee;
+  const grandTotal = subtotal; // Aligned with backend pricing engine (inclusive of taxes and free promotional delivery)
 
   const handlePayment = async () => {
     if (!isAuthenticated) {
@@ -98,22 +96,17 @@ export default function OrderSummary() {
         const rzp = new window.Razorpay(options);
         rzp.open();
       } else {
-        // Fallback for test automation / offline environments
-        // Automatically simulate test payment signature for smooth verification
-        const mockPaymentId = `pay_test_${Date.now()}`;
-        // Client-side test HMAC simulation or server auto-confirmation
-        await api.verifyPayment({
-          orderId,
-          razorpay_order_id: razorpayOrderId,
-          razorpay_payment_id: mockPaymentId,
-          razorpay_signature: 'test_auto_signature'
-        }).catch(async () => {
-          // In case signature check fails, order is still recorded
-          console.warn('Simulated verification completed.');
-        });
-
-        clearCart();
-        navigate(`/order-tracking/${orderId}`);
+        // If Razorpay SDK is not yet ready, load it dynamically and retry
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => {
+          handlePayment();
+        };
+        script.onerror = () => {
+          setError('Could not load Razorpay payment gateway. Please disable ad-blockers or check your internet connection.');
+          setLoading(false);
+        };
+        document.body.appendChild(script);
       }
     } catch (err) {
       setError(err.message || 'Failed to initiate checkout. Please try again.');
@@ -235,15 +228,15 @@ export default function OrderSummary() {
                 <span>₹{subtotal}</span>
               </div>
               <div className="price-line">
-                <span>GST (5%)</span>
-                <span>₹{tax}</span>
+                <span>GST (Taxes)</span>
+                <span style={{ color: 'var(--color-success)', fontWeight: '600' }}>Inclusive</span>
               </div>
               <div className="price-line">
                 <span>Delivery Charge</span>
-                <span>{deliveryFee === 0 ? <strong style={{ color: 'var(--color-success)' }}>FREE</strong> : `₹${deliveryFee}`}</span>
+                <strong style={{ color: 'var(--color-success)' }}>FREE</strong>
               </div>
               <div className="price-line total">
-                <span>Grand Total</span>
+                <span>Total Payable</span>
                 <span>₹{grandTotal}</span>
               </div>
             </div>

@@ -32,11 +32,14 @@ export default function AdminInventory() {
 
     function handleInventoryUpdated(data) {
       console.log('[Admin] Inventory update received over socket:', data);
-      if (data && (data.itemId || data._id)) {
-        const id = data.itemId || data._id;
-        setItems((prev) =>
-          prev.map((it) => (it._id === id ? { ...it, stock: data.stock } : it))
-        );
+      if (data) {
+        const id = data.inventoryId || data.itemId || data._id;
+        const newStock = data.currentStock !== undefined ? data.currentStock : data.stock;
+        if (id && newStock !== undefined) {
+          setItems((prev) =>
+            prev.map((it) => (it._id === id ? { ...it, stock: newStock } : it))
+          );
+        }
       }
     }
 

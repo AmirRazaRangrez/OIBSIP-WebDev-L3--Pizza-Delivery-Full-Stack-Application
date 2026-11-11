@@ -20,6 +20,20 @@ beforeAll(async () => {
   process.env.NODE_ENV = 'test';
   process.env.EMAIL_MOCK = 'true';
 
+  const testUri = process.env.DB_FALLBACK_URI || 'mongodb://127.0.0.1:27017/pizza_delivery_test';
+
+  // Strategy 1: Prefer local MongoDB if running (avoids Windows spawn EBUSY and background timer leaks)
+  try {
+    await mongoose.connect(testUri, {
+      serverSelectionTimeoutMS: 2000,
+    });
+    console.log(`[Tests Setup] Connected directly to local MongoDB: ${testUri}`);
+    return;
+  } catch (err) {
+    console.log(`[Tests Setup] Local MongoDB not reachable at ${testUri}, falling back to MongoMemoryServer...`);
+  }
+
+  // Strategy 2: In-memory MongoDB
   try {
     mongoServer = await MongoMemoryServer.create();
     const uri = mongoServer.getUri();
@@ -28,11 +42,8 @@ beforeAll(async () => {
     });
     console.log(`[Tests Setup] Connected to in-memory MongoDB: ${uri}`);
   } catch (err) {
-    console.warn('[Tests Setup] MongoMemoryServer launch failed, attempting local MongoDB fallback...', err.message);
-    const fallbackUri = process.env.DB_FALLBACK_URI || 'mongodb://127.0.0.1:27017/pizza_delivery_test';
-    await mongoose.connect(fallbackUri, {
-      serverSelectionTimeoutMS: 5000,
-    });
+    console.error('[Tests Setup] All MongoDB connection strategies failed:', err.message);
+    throw err;
   }
 }, 300000);
 

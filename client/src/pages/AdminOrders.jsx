@@ -31,9 +31,15 @@ export default function AdminOrders() {
     fetchOrders();
     joinAdminRoom();
 
-    function handleNewOrder(newOrder) {
-      console.log('[Admin] New order incoming:', newOrder);
-      setOrders((prev) => [newOrder, ...prev]);
+    function handleNewOrder(payload) {
+      console.log('[Admin] New order incoming:', payload);
+      const incomingOrder = payload?.order || payload;
+      if (incomingOrder && incomingOrder._id) {
+        setOrders((prev) => {
+          if (prev.some((o) => o._id === incomingOrder._id)) return prev;
+          return [incomingOrder, ...prev];
+        });
+      }
     }
 
     function handleStatusUpdate(data) {

@@ -39,7 +39,8 @@ export default function Dashboard() {
       price: pizza.price,
       quantity: 1,
       description: pizza.description,
-      imageUrl: pizza.imageUrl
+      image: pizza.image || pizza.imageUrl,
+      imageUrl: pizza.imageUrl || pizza.image
     });
 
     setAddedIds((prev) => ({ ...prev, [pizza._id]: true }));
@@ -103,7 +104,7 @@ export default function Dashboard() {
                 <div key={pizza._id} className="pizza-card">
                   <div className="pizza-image-wrap">
                     <img
-                      src={pizza.imageUrl || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80'}
+                      src={pizza.image || pizza.imageUrl || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80'}
                       alt={pizza.name}
                       className="pizza-image"
                     />

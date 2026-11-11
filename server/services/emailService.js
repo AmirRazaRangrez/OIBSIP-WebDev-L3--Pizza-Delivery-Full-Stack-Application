@@ -8,15 +8,23 @@ class EmailService {
 
   initTransporter() {
     const isTestMode = process.env.NODE_ENV === 'test' || process.env.EMAIL_MOCK === 'true';
+    const emailUser = process.env.EMAIL_USER;
+    const emailPass = process.env.EMAIL_PASS;
 
-    if (isTestMode) {
-      // Mock transporter for unit & integration testing
+    if (isTestMode || !emailUser || !emailPass) {
+      if (!isTestMode && (!emailUser || !emailPass)) {
+        console.warn('[EmailService] SMTP credentials (EMAIL_USER / EMAIL_PASS) not set in environment. Running in mock console dispatch mode.');
+      }
+      // Mock transporter for testing and development without live SMTP credentials
       this.transporter = {
         sendMail: async (mailOptions) => {
           this.sentEmails.push({
             ...mailOptions,
             sentAt: new Date()
           });
+          if (process.env.NODE_ENV !== 'test') {
+            console.log(`[EmailService] Mock email dispatched to: ${mailOptions.to} | Subject: ${mailOptions.subject}`);
+          }
           return {
             messageId: `mock-${Date.now()}-${Math.random().toString(36).substring(7)}`,
             accepted: [mailOptions.to],
@@ -26,8 +34,7 @@ class EmailService {
       };
     } else {
       // Clean app password (stripping whitespace if present)
-      const rawPassword = process.env.EMAIL_PASS || 'wvoz fyxc nutg ilni';
-      const cleanPassword = rawPassword.replace(/\s+/g, '');
+      const cleanPassword = emailPass.replace(/\s+/g, '');
       const port = parseInt(process.env.EMAIL_PORT, 10) || 587;
 
       this.transporter = nodemailer.createTransport({
@@ -38,7 +45,7 @@ class EmailService {
         greetingTimeout: 4000,
         socketTimeout: 5000,
         auth: {
-          user: process.env.EMAIL_USER || 'amirrazarangrez56@gmail.com',
+          user: emailUser,
           pass: cleanPassword
         },
         tls: {

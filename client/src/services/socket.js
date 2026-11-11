@@ -7,7 +7,15 @@ export function getSocket() {
   if (!socket) {
     let socketTarget = import.meta.env.VITE_BACKEND_URL;
     if (!socketTarget && typeof window !== 'undefined') {
-      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      const h = window.location.hostname;
+      const isLocal =
+        h === 'localhost' ||
+        h === '127.0.0.1' ||
+        h.endsWith('.local') ||
+        /^10\./.test(h) ||
+        /^192\.168\./.test(h) ||
+        /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(h);
+      if (!isLocal) {
         socketTarget = 'https://oibsip-webdev-l3-pizza-delivery-full.onrender.com';
       } else {
         socketTarget = window.location.origin;

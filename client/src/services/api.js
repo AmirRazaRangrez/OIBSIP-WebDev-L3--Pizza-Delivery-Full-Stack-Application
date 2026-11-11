@@ -3,8 +3,18 @@ const getBackendHost = () => {
   if (import.meta.env.VITE_BACKEND_URL) {
     return import.meta.env.VITE_BACKEND_URL.replace(/\/+$/, '');
   }
-  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    return 'https://oibsip-webdev-l3-pizza-delivery-full.onrender.com';
+  if (typeof window !== 'undefined') {
+    const h = window.location.hostname;
+    const isLocal =
+      h === 'localhost' ||
+      h === '127.0.0.1' ||
+      h.endsWith('.local') ||
+      /^10\./.test(h) ||
+      /^192\.168\./.test(h) ||
+      /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(h);
+    if (!isLocal) {
+      return 'https://oibsip-webdev-l3-pizza-delivery-full.onrender.com';
+    }
   }
   return '';
 };
