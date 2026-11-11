@@ -28,13 +28,17 @@ class EmailService {
       // Clean app password (stripping whitespace if present)
       const rawPassword = process.env.EMAIL_PASS || 'wvoz fyxc nutg ilni';
       const cleanPassword = rawPassword.replace(/\s+/g, '');
+      const port = parseInt(process.env.EMAIL_PORT, 10) || 587;
 
       this.transporter = nodemailer.createTransport({
         host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-        port: parseInt(process.env.EMAIL_PORT, 10) || 587,
-        secure: false, // true for 465, false for 587
+        port: port,
+        secure: port === 465, // true for 465 SSL, false for 587 STARTTLS
+        connectionTimeout: 4000, // 4-second fail-fast timeout
+        greetingTimeout: 4000,
+        socketTimeout: 5000,
         auth: {
-          user: process.env.EMAIL_USER || 'pizza.inventory.alerts@gmail.com',
+          user: process.env.EMAIL_USER || 'amirrazarangrez56@gmail.com',
           pass: cleanPassword
         },
         tls: {

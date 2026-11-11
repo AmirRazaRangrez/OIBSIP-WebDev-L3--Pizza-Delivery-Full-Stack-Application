@@ -64,7 +64,9 @@ exports.register = async (req, res, next) => {
         existingUser.password = password;
         const verificationToken = existingUser.generateVerificationToken();
         await existingUser.save();
-        await emailService.sendVerificationEmail(existingUser.email, existingUser.name, verificationToken).catch(() => {});
+        emailService.sendVerificationEmail(existingUser.email, existingUser.name, verificationToken).catch(err => {
+          console.warn('[Register] Background email dispatch notice:', err.message);
+        });
 
         return res.status(200).json({
           success: true,
@@ -94,8 +96,10 @@ exports.register = async (req, res, next) => {
     const verificationToken = user.generateVerificationToken();
     await user.save();
 
-    // 5. Send verification email via Nodemailer / emailService
-    await emailService.sendVerificationEmail(user.email, user.name, verificationToken).catch(() => {});
+    // 5. Send verification email asynchronously in background without blocking HTTP response
+    emailService.sendVerificationEmail(user.email, user.name, verificationToken).catch(err => {
+      console.warn('[Register] Background email dispatch notice:', err.message);
+    });
 
     // 6. Return response
     return res.status(201).json({
@@ -143,7 +147,9 @@ exports.resendVerification = async (req, res, next) => {
 
     const token = user.generateVerificationToken();
     await user.save();
-    await emailService.sendVerificationEmail(user.email, user.name, token).catch(() => {});
+    emailService.sendVerificationEmail(user.email, user.name, token).catch(err => {
+      console.warn('[Resend] Background email dispatch notice:', err.message);
+    });
 
     return res.status(200).json({
       success: true,
@@ -333,8 +339,10 @@ exports.forgotPassword = async (req, res, next) => {
     const resetToken = user.generateResetPasswordToken();
     await user.save();
 
-    // Send reset email
-    await emailService.sendPasswordResetEmail(user.email, user.name, resetToken);
+    // Send reset email asynchronously
+    emailService.sendPasswordResetEmail(user.email, user.name, resetToken).catch(err => {
+      console.warn('[ForgotPassword] Background email dispatch notice:', err.message);
+    });
 
     return res.status(200).json({
       success: true,
