@@ -1,10 +1,12 @@
 // client/src/pages/MyOrders.jsx
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Clock, Eye, AlertCircle, Loader2, ShoppingBag } from 'lucide-react';
+import { Clock, Eye, AlertCircle, Loader2, ShoppingBag, ChefHat } from 'lucide-react';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function MyOrders() {
+  const { isAdmin } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -63,6 +65,34 @@ export default function MyOrders() {
         }}>
           <AlertCircle size={16} />
           <span>{error}</span>
+        </div>
+      )}
+
+      {isAdmin && (
+        <div style={{
+          background: '#fff9e6',
+          border: '1px solid #ffe082',
+          padding: '16px 20px',
+          borderRadius: 'var(--radius-md)',
+          marginBottom: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}>
+          <div>
+            <div style={{ fontWeight: '700', color: '#b78103', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <ChefHat size={18} />
+              <span>Looking for Customer Orders?</span>
+            </div>
+            <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+              You are signed in as <strong>System Admin</strong>. Customer orders appear in the <strong>Kitchen Orders Dashboard</strong>.
+            </p>
+          </div>
+          <Link to="/admin/orders" className="btn btn-primary btn-sm">
+            Open Kitchen Orders Dashboard →
+          </Link>
         </div>
       )}
 

@@ -9,6 +9,8 @@ import {
   ShieldCheck,
   Clock,
   Sparkles,
+  ChefHat,
+  Boxes,
   Menu as MenuIcon,
   X as CloseIcon
 } from 'lucide-react';
@@ -62,14 +64,36 @@ export default function Navbar() {
               <span>Custom Pizza</span>
             </Link>
 
-            {isAuthenticated && (
-              <Link
-                to="/my-orders"
-                className={`nav-item ${location.pathname === '/my-orders' ? 'active' : ''}`}
-              >
-                <Clock size={18} />
-                <span>Track Orders</span>
-              </Link>
+            {/* If Admin: Direct Links to Kitchen Orders & Inventory */}
+            {isAdmin ? (
+              <>
+                <Link
+                  to="/admin/orders"
+                  className={`nav-item ${location.pathname === '/admin/orders' ? 'active' : ''}`}
+                  style={{ color: 'var(--color-primary)', fontWeight: 700 }}
+                >
+                  <ChefHat size={18} />
+                  <span>Kitchen Orders</span>
+                </Link>
+
+                <Link
+                  to="/admin/inventory"
+                  className={`nav-item ${location.pathname === '/admin/inventory' ? 'active' : ''}`}
+                >
+                  <Boxes size={18} />
+                  <span>Inventory</span>
+                </Link>
+              </>
+            ) : (
+              isAuthenticated && (
+                <Link
+                  to="/my-orders"
+                  className={`nav-item ${location.pathname === '/my-orders' ? 'active' : ''}`}
+                >
+                  <Clock size={18} />
+                  <span>Track Orders</span>
+                </Link>
+              )
             )}
 
             {/* Cart CTA */}
@@ -79,13 +103,8 @@ export default function Navbar() {
               {totalCartCount > 0 && <span className="cart-badge">{totalCartCount}</span>}
             </Link>
 
-            {/* Admin Switcher */}
-            {isAdmin ? (
-              <Link to="/admin/inventory" className="admin-switch-btn">
-                <ShieldCheck size={16} color="var(--color-primary)" />
-                <span>Admin Portal</span>
-              </Link>
-            ) : (
+            {/* Admin Switcher when not logged in as Admin */}
+            {!isAdmin && (
               <Link to="/admin/login" className="admin-switch-btn">
                 <ShieldCheck size={16} />
                 <span>Admin</span>
@@ -97,7 +116,7 @@ export default function Navbar() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <User size={16} />
-                  {user.name || user.email?.split('@')[0]}
+                  {isAdmin ? 'System Admin' : user.name || user.email?.split('@')[0]}
                 </span>
                 <button
                   onClick={handleLogout}
@@ -159,15 +178,36 @@ export default function Navbar() {
                 <span>Custom Pizza Builder</span>
               </Link>
 
-              {isAuthenticated && (
-                <Link
-                  to="/my-orders"
-                  className={`mobile-nav-item ${location.pathname === '/my-orders' ? 'active' : ''}`}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Clock size={18} />
-                  <span>My Orders & Live Tracking</span>
-                </Link>
+              {isAdmin ? (
+                <>
+                  <Link
+                    to="/admin/orders"
+                    className={`mobile-nav-item ${location.pathname === '/admin/orders' ? 'active' : ''} admin-highlight`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <ChefHat size={18} />
+                    <span>Kitchen Orders Dashboard</span>
+                  </Link>
+                  <Link
+                    to="/admin/inventory"
+                    className={`mobile-nav-item ${location.pathname === '/admin/inventory' ? 'active' : ''}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Boxes size={18} />
+                    <span>Inventory Management</span>
+                  </Link>
+                </>
+              ) : (
+                isAuthenticated && (
+                  <Link
+                    to="/my-orders"
+                    className={`mobile-nav-item ${location.pathname === '/my-orders' ? 'active' : ''}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Clock size={18} />
+                    <span>My Orders & Live Tracking</span>
+                  </Link>
+                )
               )}
 
               <Link
@@ -181,26 +221,7 @@ export default function Navbar() {
 
               <div className="mobile-divider" />
 
-              {isAdmin ? (
-                <>
-                  <Link
-                    to="/admin/orders"
-                    className="mobile-nav-item admin-highlight"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <ShieldCheck size={18} />
-                    <span>Kitchen Orders Dashboard</span>
-                  </Link>
-                  <Link
-                    to="/admin/inventory"
-                    className="mobile-nav-item admin-highlight"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <ShieldCheck size={18} />
-                    <span>Inventory Management</span>
-                  </Link>
-                </>
-              ) : (
+              {!isAdmin && (
                 <Link
                   to="/admin/login"
                   className="mobile-nav-item"
@@ -218,8 +239,12 @@ export default function Navbar() {
                   <div className="mobile-user-info">
                     <User size={18} />
                     <div>
-                      <div style={{ fontWeight: '700' }}>{user.name || 'Customer'}</div>
-                      <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>{user.email}</div>
+                      <div style={{ fontWeight: '700' }}>
+                        {isAdmin ? 'System Admin' : user.name || 'Customer'}
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                        {user.email}
+                      </div>
                     </div>
                   </div>
                   <button
@@ -285,7 +310,15 @@ export default function Navbar() {
           <span>Cart</span>
         </Link>
 
-        {isAuthenticated ? (
+        {isAdmin ? (
+          <Link
+            to="/admin/orders"
+            className={`mobile-bottom-item ${location.pathname === '/admin/orders' ? 'active' : ''}`}
+          >
+            <ChefHat size={20} color="var(--color-primary)" />
+            <span>Kitchen</span>
+          </Link>
+        ) : isAuthenticated ? (
           <Link
             to="/my-orders"
             className={`mobile-bottom-item ${location.pathname === '/my-orders' ? 'active' : ''}`}
@@ -305,11 +338,11 @@ export default function Navbar() {
 
         {isAdmin ? (
           <Link
-            to="/admin/orders"
-            className={`mobile-bottom-item ${location.pathname.startsWith('/admin') ? 'active' : ''}`}
+            to="/admin/inventory"
+            className={`mobile-bottom-item ${location.pathname === '/admin/inventory' ? 'active' : ''}`}
           >
-            <ShieldCheck size={20} color="var(--color-primary)" />
-            <span>Kitchen</span>
+            <Boxes size={20} />
+            <span>Stock</span>
           </Link>
         ) : (
           <Link

@@ -57,6 +57,7 @@ export function AuthProvider({ children }) {
   };
 
   const addToCart = (item) => {
+    setCart((prev) => [...prev, item]);
     setCart((prev) => {
       if (item.type === 'preconfigured') {
         const existingIdx = prev.findIndex(

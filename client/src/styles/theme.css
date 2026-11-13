@@ -1107,6 +1107,7 @@ input, select, textarea {
 }
 
 /* ==========================================================================
+   Responsive Adaptations
    Responsive Adaptations & Mobile Zero-Overflow Suite
    ========================================================================== */
 html, body {
@@ -1158,6 +1159,10 @@ html, body {
   .step-indicator, .step-node {
     flex-direction: row;
     width: 100%;
+  }
+  
+  .nav-links {
+    gap: 10px;
   }
 
   .data-table-wrapper {
