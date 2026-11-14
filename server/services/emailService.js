@@ -67,6 +67,20 @@ class EmailService {
     this.sentEmails = [];
   }
 
+  getClientBaseUrl() {
+    if (process.env.FRONTEND_URL) {
+      return process.env.FRONTEND_URL.replace(/\/+$/, '');
+    }
+    const raw = process.env.CLIENT_URL || '';
+    const parts = raw.split(',').map(s => s.trim()).filter(Boolean);
+    const pagesUrl = parts.find(u => u.includes('pages.dev'));
+    if (pagesUrl) return pagesUrl.replace(/\/+$/, '');
+    const httpsUrl = parts.find(u => u.startsWith('https://'));
+    if (httpsUrl) return httpsUrl.replace(/\/+$/, '');
+    if (parts.length > 0) return parts[0].replace(/\/+$/, '');
+    return 'https://oibsip-webdev-l3--pizza-delivery-full-stack-application.pages.dev';
+  }
+
   async sendMail(options) {
     const fromAddress = process.env.EMAIL_FROM || `"Pizza Delivery" <${process.env.EMAIL_USER || 'no-reply@pizzadelivery.com'}>`;
     const mailOptions = {
@@ -87,7 +101,7 @@ class EmailService {
   }
 
   async sendVerificationEmail(email, name, token) {
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+    const clientUrl = this.getClientBaseUrl();
     const verificationUrl = `${clientUrl}/verify-email?token=${token}`;
 
     const htmlContent = `
@@ -137,7 +151,7 @@ class EmailService {
   }
 
   async sendPasswordResetEmail(email, name, token) {
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+    const clientUrl = this.getClientBaseUrl();
     const resetUrl = `${clientUrl}/reset-password?token=${token}`;
 
     const htmlContent = `

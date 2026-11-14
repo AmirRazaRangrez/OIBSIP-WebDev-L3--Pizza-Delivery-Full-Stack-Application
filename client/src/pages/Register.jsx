@@ -173,19 +173,19 @@ export default function Register() {
                 <Loader2 size={14} className="animate-spin" />
                 <span style={{ fontWeight: '600' }}>Listening for live verification...</span>
               </div>
-              <p style={{ color: 'var(--color-text-muted)', fontSize: '12px', marginBottom: '12px' }}>
-                Open the link in your email on any device, and <strong>this window will automatically update</strong> the moment you click it!
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', lineHeight: '1.6', marginBottom: '14px' }}>
+                Please open your email application, locate the verification message, and click the activation link. <strong>This screen will automatically refresh</strong> the moment you click it!
               </p>
-              {successData.emailVerificationToken && (
-                <Link
-                  to={`/verify-email?token=${successData.emailVerificationToken}`}
-                  className="btn btn-outline btn-sm"
-                  style={{ width: '100%', justifyContent: 'center' }}
-                >
-                  <Mail size={14} />
-                  <span>Click to Verify on This Device</span>
-                </Link>
-              )}
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={loading}
+                className="btn btn-outline btn-sm"
+                style={{ width: '100%', justifyContent: 'center' }}
+              >
+                <Mail size={14} />
+                <span>{loading ? 'Sending...' : 'Resend Email to Inbox'}</span>
+              </button>
             </div>
 
             <Link to="/login" className="btn btn-primary" style={{ width: '100%' }}>

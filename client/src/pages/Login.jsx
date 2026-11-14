@@ -1,7 +1,7 @@
 // client/src/pages/Login.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LogIn, AlertCircle } from 'lucide-react';
+import { LogIn, AlertCircle, CheckCircle, Mail } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
@@ -9,6 +9,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [resendNotice, setResendNotice] = useState('');
   const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
@@ -19,6 +20,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setResendNotice('');
     setLoading(true);
     try {
       await login({ email, password });
@@ -30,16 +32,19 @@ export default function Login() {
     }
   };
 
-  const handleQuickVerify = async () => {
-    if (!email) return;
+  const handleResendEmail = async () => {
+    if (!email) {
+      setError('Please enter your email address to receive a verification link.');
+      return;
+    }
     setLoading(true);
+    setError('');
+    setResendNotice('');
     try {
-      const res = await api.resendVerification(email);
-      if (res.emailVerificationToken) {
-        navigate(`/verify-email?token=${res.emailVerificationToken}`);
-      }
+      await api.resendVerification(email);
+      setResendNotice(`A fresh verification link has been sent to ${email}. Please check your email inbox and spam folder.`);
     } catch (err) {
-      setError(err.message || 'Could not verify email.');
+      setError(err.message || 'Could not send verification email.');
     } finally {
       setLoading(false);
     }
@@ -52,6 +57,23 @@ export default function Login() {
           <h1>Welcome Back</h1>
           <p>Sign in to order your favorite gourmet pizzas</p>
         </div>
+
+        {resendNotice && (
+          <div style={{
+            background: '#edfaf1',
+            color: 'var(--color-success)',
+            padding: '14px 16px',
+            borderRadius: 'var(--radius-md)',
+            marginBottom: '20px',
+            fontSize: '13px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <CheckCircle size={16} />
+            <span>{resendNotice}</span>
+          </div>
+        )}
 
         {error && (
           <div style={{
@@ -69,11 +91,13 @@ export default function Login() {
             {error.toLowerCase().includes('verify') && (
               <button
                 type="button"
-                onClick={handleQuickVerify}
+                onClick={handleResendEmail}
+                disabled={loading}
                 className="btn btn-primary btn-sm"
                 style={{ width: '100%', marginTop: '10px', justifyContent: 'center' }}
               >
-                Click to Verify This Email Now
+                <Mail size={14} />
+                <span>{loading ? 'Sending...' : 'Resend Verification Email to Inbox'}</span>
               </button>
             )}
           </div>
