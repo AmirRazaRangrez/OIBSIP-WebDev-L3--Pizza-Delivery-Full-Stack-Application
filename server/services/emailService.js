@@ -3,6 +3,8 @@ const nodemailer = require('nodemailer');
 class EmailService {
   constructor() {
     this.sentEmails = []; // Test spy store
+    this.smtpReady = false;
+    this.lastError = null;
     this.initTransporter();
   }
 
@@ -35,23 +37,44 @@ class EmailService {
     } else {
       // Clean app password (stripping whitespace if present)
       const cleanPassword = emailPass.replace(/\s+/g, '');
-      const port = parseInt(process.env.EMAIL_PORT, 10) || 587;
+      const isGmail = !process.env.EMAIL_HOST || process.env.EMAIL_HOST.includes('gmail');
 
-      this.transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-        port: port,
-        secure: port === 465, // true for 465 SSL, false for 587 STARTTLS
-        connectionTimeout: 4000, // 4-second fail-fast timeout
-        greetingTimeout: 4000,
-        socketTimeout: 5000,
-        auth: {
-          user: emailUser,
-          pass: cleanPassword
-        },
-        tls: {
-          rejectUnauthorized: false
-        }
-      });
+      const transportConfig = isGmail
+        ? {
+            service: 'gmail',
+            auth: {
+              user: emailUser,
+              pass: cleanPassword
+            }
+          }
+        : {
+            host: process.env.EMAIL_HOST,
+            port: parseInt(process.env.EMAIL_PORT, 10) || 587,
+            secure: (parseInt(process.env.EMAIL_PORT, 10) || 587) === 465,
+            auth: {
+              user: emailUser,
+              pass: cleanPassword
+            },
+            tls: {
+              rejectUnauthorized: false
+            }
+          };
+
+      this.transporter = nodemailer.createTransport(transportConfig);
+
+      if (!isTestMode) {
+        this.transporter.verify((err) => {
+          if (err) {
+            this.smtpReady = false;
+            this.lastError = err.message;
+            console.error('[EmailService] SMTP verification failed:', err.message);
+          } else {
+            this.smtpReady = true;
+            this.lastError = null;
+            console.log('[EmailService] SMTP server verified and ready to deliver real emails.');
+          }
+        });
+      }
     }
   }
 
@@ -67,7 +90,10 @@ class EmailService {
     this.sentEmails = [];
   }
 
-  getClientBaseUrl() {
+  getClientBaseUrl(origin = null) {
+    if (origin && typeof origin === 'string' && (origin.startsWith('https://') || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1'))) {
+      return origin.replace(/\/+$/, '');
+    }
     if (process.env.FRONTEND_URL) {
       return process.env.FRONTEND_URL.replace(/\/+$/, '');
     }
@@ -90,9 +116,12 @@ class EmailService {
 
     try {
       const result = await this.transporter.sendMail(mailOptions);
+      this.lastError = null;
+      console.log(`[EmailService] Email successfully delivered to: ${options.to} | MessageId: ${result.messageId}`);
       return result;
     } catch (error) {
-      console.error('[EmailService] Dispatch error:', error.message);
+      console.error('[EmailService] Dispatch error to', options.to, ':', error.message);
+      this.lastError = error.message;
       if (process.env.NODE_ENV === 'test') {
         throw error;
       }
@@ -100,8 +129,8 @@ class EmailService {
     }
   }
 
-  async sendVerificationEmail(email, name, token) {
-    const clientUrl = this.getClientBaseUrl();
+  async sendVerificationEmail(email, name, token, origin = null) {
+    const clientUrl = this.getClientBaseUrl(origin);
     const verificationUrl = `${clientUrl}/verify-email?token=${token}`;
 
     const htmlContent = `
@@ -150,8 +179,8 @@ class EmailService {
     });
   }
 
-  async sendPasswordResetEmail(email, name, token) {
-    const clientUrl = this.getClientBaseUrl();
+  async sendPasswordResetEmail(email, name, token, origin = null) {
+    const clientUrl = this.getClientBaseUrl(origin);
     const resetUrl = `${clientUrl}/reset-password?token=${token}`;
 
     const htmlContent = `

@@ -64,7 +64,7 @@ exports.register = async (req, res, next) => {
         existingUser.password = password;
         const verificationToken = existingUser.generateVerificationToken();
         await existingUser.save();
-        emailService.sendVerificationEmail(existingUser.email, existingUser.name, verificationToken).catch(err => {
+        emailService.sendVerificationEmail(existingUser.email, existingUser.name, verificationToken, req.get('origin')).catch(err => {
           console.warn('[Register] Background email dispatch notice:', err.message);
         });
 
@@ -97,7 +97,7 @@ exports.register = async (req, res, next) => {
     await user.save();
 
     // 5. Send verification email asynchronously in background without blocking HTTP response
-    emailService.sendVerificationEmail(user.email, user.name, verificationToken).catch(err => {
+    emailService.sendVerificationEmail(user.email, user.name, verificationToken, req.get('origin')).catch(err => {
       console.warn('[Register] Background email dispatch notice:', err.message);
     });
 
@@ -147,7 +147,7 @@ exports.resendVerification = async (req, res, next) => {
 
     const token = user.generateVerificationToken();
     await user.save();
-    emailService.sendVerificationEmail(user.email, user.name, token).catch(err => {
+    emailService.sendVerificationEmail(user.email, user.name, token, req.get('origin')).catch(err => {
       console.warn('[Resend] Background email dispatch notice:', err.message);
     });
 
@@ -340,7 +340,7 @@ exports.forgotPassword = async (req, res, next) => {
     await user.save();
 
     // Send reset email asynchronously
-    emailService.sendPasswordResetEmail(user.email, user.name, resetToken).catch(err => {
+    emailService.sendPasswordResetEmail(user.email, user.name, resetToken, req.get('origin')).catch(err => {
       console.warn('[ForgotPassword] Background email dispatch notice:', err.message);
     });
 

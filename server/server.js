@@ -85,6 +85,12 @@ app.get('/api/health', (req, res) => {
 
   const dbState = dbStates[mongoose.connection.readyState] || 'unknown';
 
+  const emailService = require('./services/emailService');
+  const emailConfigured = Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS);
+  const emailMasked = process.env.EMAIL_USER
+    ? process.env.EMAIL_USER.replace(/(.{2})(.*)(@.*)/, '$1***$3')
+    : null;
+
   res.status(200).json({
     status: 'OK',
     uptime: process.uptime(),
@@ -97,7 +103,11 @@ app.get('/api/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development',
     services: {
       websockets: 'active',
-      email: process.env.EMAIL_PASS ? 'configured' : 'unconfigured',
+      email: {
+        status: emailConfigured ? (emailService.smtpReady ? 'connected' : 'authenticating_or_error') : 'mock_console',
+        sender: emailMasked,
+        error: emailService.lastError || null
+      },
       razorpay: process.env.RAZORPAY_KEY_ID ? 'configured' : 'unconfigured'
     }
   });
