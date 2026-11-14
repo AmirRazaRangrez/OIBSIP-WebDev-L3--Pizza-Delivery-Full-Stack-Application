@@ -87,7 +87,8 @@ app.get('/api/health', (req, res) => {
 
   const emailService = require('./services/emailService');
   const resendActive = Boolean(process.env.RESEND_API_KEY);
-  const emailConfigured = Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS) || resendActive;
+  const brevoActive = Boolean(process.env.BREVO_API_KEY);
+  const emailConfigured = Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS) || resendActive || brevoActive;
   const emailMasked = process.env.EMAIL_USER
     ? process.env.EMAIL_USER.replace(/(.{2})(.*)(@.*)/, '$1***$3')
     : null;
@@ -105,9 +106,9 @@ app.get('/api/health', (req, res) => {
     services: {
       websockets: 'active',
       email: {
-        provider: resendActive ? 'resend_https_port_443' : (process.env.EMAIL_USER ? 'gmail_smtp' : 'mock_console'),
-        status: resendActive ? 'connected' : (emailConfigured ? (emailService.smtpReady ? 'connected' : 'authenticating_or_error') : 'mock_console'),
-        sender: resendActive ? (process.env.EMAIL_FROM || 'onboarding@resend.dev') : emailMasked,
+        provider: brevoActive ? 'brevo_https_port_443' : (resendActive ? 'resend_https_port_443' : (process.env.EMAIL_USER ? 'gmail_smtp' : 'mock_console')),
+        status: (brevoActive || resendActive) ? 'connected' : (emailConfigured ? (emailService.smtpReady ? 'connected' : 'authenticating_or_error') : 'mock_console'),
+        sender: brevoActive ? (process.env.EMAIL_USER || 'no-reply@pizzadelivery.com') : (resendActive ? (process.env.EMAIL_FROM || 'onboarding@resend.dev') : emailMasked),
         error: emailService.lastError || null
       },
       razorpay: process.env.RAZORPAY_KEY_ID ? 'configured' : 'unconfigured'

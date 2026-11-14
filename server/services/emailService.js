@@ -136,8 +136,52 @@ class EmailService {
     };
   }
 
+  async sendViaBrevo(options) {
+    const apiKey = process.env.BREVO_API_KEY;
+    const fromEmail = process.env.EMAIL_USER || 'no-reply@pizzadelivery.com';
+    const fromName = 'Zomato Pizza';
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'api-key': apiKey,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        sender: { name: fromName, email: fromEmail },
+        to: [{ email: options.to }],
+        subject: options.subject,
+        htmlContent: options.html,
+        textContent: options.text
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || `Brevo HTTP error ${response.status}`);
+    }
+    return {
+      messageId: data.messageId,
+      accepted: [options.to],
+      provider: 'brevo'
+    };
+  }
+
   async sendMail(options) {
-    // 1. If Resend HTTPS API Key is set, dispatch over Port 443 (bypasses all cloud SMTP port blocks)
+    // 1. If Brevo HTTPS API Key is set, dispatch over Port 443 (100% immune to Render free-tier SMTP blocks)
+    if (process.env.BREVO_API_KEY && process.env.NODE_ENV !== 'test') {
+      try {
+        const result = await this.sendViaBrevo(options);
+        this.lastError = null;
+        console.log(`[EmailService/Brevo] Real email delivered to: ${options.to} | MessageId: ${result.messageId}`);
+        return result;
+      } catch (err) {
+        console.error('[EmailService/Brevo] HTTPS dispatch notice:', err.message);
+        this.lastError = err.message;
+      }
+    }
+
+    // 2. If Resend HTTPS API Key is set, dispatch over Port 443 (bypasses all cloud SMTP port blocks)
     if (process.env.RESEND_API_KEY && process.env.NODE_ENV !== 'test') {
       try {
         const result = await this.sendViaResend(options);

@@ -61,4 +61,80 @@ router.delete('/users', protect, requireAdmin, async (req, res, next) => {
 // Admin order management routes
 router.use('/orders', require('./adminOrderRoutes'));
 
+// Network diagnostic tool to inspect live cloud outbound port filtering
+const net = require('net');
+
+const testTcpConnection = (host, port, timeout = 4000) => {
+  return new Promise((resolve) => {
+    const start = Date.now();
+    const socket = new net.Socket();
+    let isResolved = false;
+
+    socket.setTimeout(timeout);
+
+    socket.on('connect', () => {
+      if (!isResolved) {
+        isResolved = true;
+        const latency = Date.now() - start;
+        socket.destroy();
+        resolve({ host, port, status: 'OPEN', latencyMs: latency });
+      }
+    });
+
+    socket.on('timeout', () => {
+      if (!isResolved) {
+        isResolved = true;
+        socket.destroy();
+        resolve({ host, port, status: 'BLOCKED_TIMEOUT', error: `Firewall dropped packet (timed out after ${timeout}ms)` });
+      }
+    });
+
+    socket.on('error', (err) => {
+      if (!isResolved) {
+        isResolved = true;
+        socket.destroy();
+        resolve({ host, port, status: 'ERROR', error: err.message });
+      }
+    });
+
+    socket.connect(port, host);
+  });
+};
+
+router.post('/diagnose-network', protect, requireAdmin, async (req, res) => {
+  const targets = [
+    { host: 'smtp.gmail.com', port: 465 },
+    { host: 'smtp.gmail.com', port: 587 },
+    { host: 'api.resend.com', port: 443 },
+    { host: 'api.brevo.com', port: 443 }
+  ];
+
+  const results = await Promise.all(targets.map(t => testTcpConnection(t.host, t.port)));
+  return res.status(200).json({
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    results
+  });
+});
+
+router.post('/send-live-test-email', protect, requireAdmin, async (req, res) => {
+  try {
+    const to = req.body.to || 'bydominalhotelcitypark@gmail.com';
+    const emailService = require('../services/emailService');
+    const result = await emailService.sendVerificationEmail(to, 'Test Recipient', 'live-test-token-777', req.get('origin'));
+    return res.status(200).json({
+      success: !result?.error,
+      result,
+      smtpReady: emailService.smtpReady,
+      lastError: emailService.lastError
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+      stack: err.stack
+    });
+  }
+});
+
 module.exports = router;

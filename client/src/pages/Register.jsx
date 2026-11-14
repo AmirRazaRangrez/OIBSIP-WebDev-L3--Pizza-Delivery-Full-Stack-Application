@@ -186,21 +186,6 @@ export default function Register() {
                 <Mail size={14} />
                 <span>{loading ? 'Sending...' : 'Resend Email to Inbox'}</span>
               </button>
-
-              {successData?.emailVerificationToken && (
-                <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid var(--color-border)', textAlign: 'center' }}>
-                  <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '8px' }}>
-                    Testing or Render free tier? Activate your account instantly:
-                  </p>
-                  <Link
-                    to={`/verify-email?token=${successData.emailVerificationToken}`}
-                    className="btn btn-primary btn-sm"
-                    style={{ width: '100%', justifyContent: 'center' }}
-                  >
-                    Activate Account Now (Instant) →
-                  </Link>
-                </div>
-              )}
             </div>
 
             <Link to="/login" className="btn btn-primary" style={{ width: '100%' }}>
