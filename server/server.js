@@ -86,7 +86,8 @@ app.get('/api/health', (req, res) => {
   const dbState = dbStates[mongoose.connection.readyState] || 'unknown';
 
   const emailService = require('./services/emailService');
-  const emailConfigured = Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS);
+  const resendActive = Boolean(process.env.RESEND_API_KEY);
+  const emailConfigured = Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS) || resendActive;
   const emailMasked = process.env.EMAIL_USER
     ? process.env.EMAIL_USER.replace(/(.{2})(.*)(@.*)/, '$1***$3')
     : null;
@@ -104,8 +105,9 @@ app.get('/api/health', (req, res) => {
     services: {
       websockets: 'active',
       email: {
-        status: emailConfigured ? (emailService.smtpReady ? 'connected' : 'authenticating_or_error') : 'mock_console',
-        sender: emailMasked,
+        provider: resendActive ? 'resend_https_port_443' : (process.env.EMAIL_USER ? 'gmail_smtp' : 'mock_console'),
+        status: resendActive ? 'connected' : (emailConfigured ? (emailService.smtpReady ? 'connected' : 'authenticating_or_error') : 'mock_console'),
+        sender: resendActive ? (process.env.EMAIL_FROM || 'onboarding@resend.dev') : emailMasked,
         error: emailService.lastError || null
       },
       razorpay: process.env.RAZORPAY_KEY_ID ? 'configured' : 'unconfigured'

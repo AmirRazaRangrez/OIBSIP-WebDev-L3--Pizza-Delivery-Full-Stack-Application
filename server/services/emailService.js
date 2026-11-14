@@ -107,7 +107,49 @@ class EmailService {
     return 'https://oibsip-webdev-l3--pizza-delivery-full-stack-application.pages.dev';
   }
 
+  async sendViaResend(options) {
+    const apiKey = process.env.RESEND_API_KEY;
+    const fromAddress = process.env.EMAIL_FROM || 'Zomato Pizza <onboarding@resend.dev>';
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: fromAddress,
+        to: [options.to],
+        subject: options.subject,
+        html: options.html,
+        text: options.text
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || `Resend HTTP error ${response.status}`);
+    }
+    return {
+      messageId: data.id,
+      accepted: [options.to],
+      provider: 'resend'
+    };
+  }
+
   async sendMail(options) {
+    // 1. If Resend HTTPS API Key is set, dispatch over Port 443 (bypasses all cloud SMTP port blocks)
+    if (process.env.RESEND_API_KEY && process.env.NODE_ENV !== 'test') {
+      try {
+        const result = await this.sendViaResend(options);
+        this.lastError = null;
+        console.log(`[EmailService/Resend] Email delivered to: ${options.to} | Id: ${result.messageId}`);
+        return result;
+      } catch (err) {
+        console.error('[EmailService/Resend] HTTPS dispatch notice:', err.message);
+        this.lastError = err.message;
+      }
+    }
+
     const fromAddress = process.env.EMAIL_FROM || `"Pizza Delivery" <${process.env.EMAIL_USER || 'no-reply@pizzadelivery.com'}>`;
     const mailOptions = {
       from: fromAddress,
