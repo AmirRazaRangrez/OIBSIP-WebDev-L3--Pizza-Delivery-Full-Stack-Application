@@ -69,7 +69,7 @@ export default function Register() {
       <div className="auth-card">
         <div className="auth-header">
           <h1>Create an Account</h1>
-          <p>Join Zomato Pizza for exclusive culinary customizers</p>
+          <p>Join Pizzo by Raza for exclusive culinary customizers</p>
         </div>
 
         {error && (

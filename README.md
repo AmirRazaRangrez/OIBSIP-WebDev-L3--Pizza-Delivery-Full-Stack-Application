@@ -16,7 +16,7 @@
 
 ## 🌟 Overview
 
-The **Gourmet Pizza Delivery Platform** is a production-grade, full-stack web application crafted to deliver an intuitive consumer ordering experience paired with a robust administrative back-office. Designed with an official **Zomato-inspired light aesthetic**, the platform allows customers to choose from chef-curated signature pizzas or build bespoke creations across a 4-step ingredient pipeline with live pricing.
+The **Pizzo by Raza Gourmet Pizza Delivery Platform** is a production-grade, full-stack web application crafted to deliver an intuitive consumer ordering experience paired with a robust administrative back-office. Designed with a clean, high-performance **artisanal light aesthetic**, the platform allows customers to choose from chef-curated signature pizzas or build bespoke creations across a 4-step ingredient pipeline with live pricing.
 
 Orders are processed via **Razorpay** with server-side HMAC-SHA256 signature verification, immediately triggering atomic inventory decrements. Customers track their pizza in real-time through an interactive visual stepper powered by **Socket.io** as kitchen admins transition orders from prep to delivery.
 
@@ -145,7 +145,7 @@ RAZORPAY_KEY_ID=your_razorpay_key_id
 RAZORPAY_KEY_SECRET=your_razorpay_key_secret
 EMAIL_USER=your_email@gmail.com
 EMAIL_PASS=your_gmail_app_password
-EMAIL_FROM="Zomato Pizza" <your_email@gmail.com>
+EMAIL_FROM="Pizzo by Raza" <your_email@gmail.com>
 ```
 
 ### 3. Install & Start Backend

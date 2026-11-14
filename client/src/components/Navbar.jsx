@@ -41,8 +41,8 @@ export default function Navbar() {
         <div className="container navbar-inner">
           {/* Brand Logo */}
           <Link to="/" className="nav-brand" onClick={() => setMobileMenuOpen(false)}>
-            <span>zomato</span>
-            <span style={{ color: 'var(--color-secondary)', fontWeight: 800 }}>pizza</span>
+            <span>pizzo</span>
+            <span style={{ color: 'var(--color-secondary)', fontWeight: 800 }}>by raza</span>
             <span className="tagline">Official</span>
           </Link>
 

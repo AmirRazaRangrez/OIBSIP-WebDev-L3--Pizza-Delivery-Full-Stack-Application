@@ -44,7 +44,7 @@ export default function AdminLogin() {
           }}>
             <ShieldCheck size={32} />
           </div>
-          <h1>Zomato Kitchen Admin</h1>
+          <h1>Pizzo by Raza Kitchen Admin</h1>
           <p>Restricted access portal for inventory control & order dispatch</p>
         </div>
 

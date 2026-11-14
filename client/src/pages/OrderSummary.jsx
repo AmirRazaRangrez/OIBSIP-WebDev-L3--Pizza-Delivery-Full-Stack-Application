@@ -57,7 +57,7 @@ export default function OrderSummary() {
           key: key || 'rzp_test_Twlntm5UkURGg0',
           amount: amount,
           currency: currency || 'INR',
-          name: 'Zomato Pizza',
+          name: 'Pizzo by Raza',
           description: `Order #${orderId}`,
           image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=120&q=80',
           order_id: razorpayOrderId,

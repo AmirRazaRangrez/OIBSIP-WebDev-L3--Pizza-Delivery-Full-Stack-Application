@@ -67,7 +67,7 @@ if (process.env.NODE_ENV === 'development') {
 app.get('/', (req, res) => {
   res.status(200).json({
     status: 'online',
-    service: 'Zomato Pizza Delivery & Inventory Engine',
+    service: 'Pizzo by Raza Delivery & Inventory Engine',
     health: '/api/health',
     pizzas: '/api/pizzas',
     version: '1.0.0'

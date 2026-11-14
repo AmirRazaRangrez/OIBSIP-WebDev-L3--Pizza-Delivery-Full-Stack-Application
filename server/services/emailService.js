@@ -41,24 +41,24 @@ class EmailService {
 
       const transportConfig = isGmail
         ? {
-            service: 'gmail',
-            auth: {
-              user: emailUser,
-              pass: cleanPassword
-            }
+          service: 'gmail',
+          auth: {
+            user: emailUser,
+            pass: cleanPassword
           }
+        }
         : {
-            host: process.env.EMAIL_HOST,
-            port: parseInt(process.env.EMAIL_PORT, 10) || 587,
-            secure: (parseInt(process.env.EMAIL_PORT, 10) || 587) === 465,
-            auth: {
-              user: emailUser,
-              pass: cleanPassword
-            },
-            tls: {
-              rejectUnauthorized: false
-            }
-          };
+          host: process.env.EMAIL_HOST,
+          port: parseInt(process.env.EMAIL_PORT, 10) || 587,
+          secure: (parseInt(process.env.EMAIL_PORT, 10) || 587) === 465,
+          auth: {
+            user: emailUser,
+            pass: cleanPassword
+          },
+          tls: {
+            rejectUnauthorized: false
+          }
+        };
 
       this.transporter = nodemailer.createTransport(transportConfig);
 
@@ -109,7 +109,7 @@ class EmailService {
 
   async sendViaResend(options) {
     const apiKey = process.env.RESEND_API_KEY;
-    const fromAddress = process.env.EMAIL_FROM || 'Zomato Pizza <onboarding@resend.dev>';
+    const fromAddress = process.env.EMAIL_FROM || 'Pizzo by Raza <onboarding@resend.dev>';
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -139,7 +139,7 @@ class EmailService {
   async sendViaBrevo(options) {
     const apiKey = process.env.BREVO_API_KEY;
     const fromEmail = process.env.EMAIL_USER || 'no-reply@pizzadelivery.com';
-    const fromName = 'Zomato Pizza';
+    const fromName = 'Pizzo by Raza';
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
@@ -194,7 +194,7 @@ class EmailService {
       }
     }
 
-    const fromAddress = process.env.EMAIL_FROM || `"Pizza Delivery" <${process.env.EMAIL_USER || 'no-reply@pizzadelivery.com'}>`;
+    const fromAddress = process.env.EMAIL_FROM || `"Pizzo by Raza" <${process.env.EMAIL_USER || 'no-reply@pizzadelivery.com'}>`;
     const mailOptions = {
       from: fromAddress,
       ...options
@@ -237,11 +237,11 @@ class EmailService {
       <body>
         <div class="container">
           <div class="header">
-            <h1 style="margin:0; font-size: 24px;">🍕 Pizza Delivery</h1>
+            <h1 style="margin:0; font-size: 24px;">🍕 Pizzo by Raza</h1>
           </div>
           <div class="content">
             <h2>Welcome, ${name}!</h2>
-            <p>Thank you for joining Pizza Delivery. Please confirm your email address by clicking the button below:</p>
+            <p>Thank you for joining Pizzo by Raza. Please confirm your email address by clicking the button below:</p>
             <p style="text-align: center;">
               <a href="${verificationUrl}" class="btn" target="_blank">Verify Email Address</a>
             </p>
@@ -250,7 +250,7 @@ class EmailService {
             <p><small>This verification link will expire in 24 hours.</small></p>
           </div>
           <div class="footer">
-            &copy; ${new Date().getFullYear()} Pizza Delivery Inc. All rights reserved.
+            &copy; ${new Date().getFullYear()} Pizzo by Raza. All rights reserved.
           </div>
         </div>
       </body>
@@ -259,7 +259,7 @@ class EmailService {
 
     return this.sendMail({
       to: email,
-      subject: 'Verify Your Email Address — Pizza Delivery',
+      subject: 'Verify Your Email Address — Pizzo by Raza',
       html: htmlContent,
       text: `Welcome ${name}! Please verify your email by opening: ${verificationUrl}`
     });
@@ -287,11 +287,11 @@ class EmailService {
       <body>
         <div class="container">
           <div class="header">
-            <h1 style="margin:0; font-size: 24px;">🍕 Pizza Delivery</h1>
+            <h1 style="margin:0; font-size: 24px;">🍕 Pizzo by Raza</h1>
           </div>
           <div class="content">
             <h2>Hello, ${name}</h2>
-            <p>You recently requested to reset your password for your Pizza Delivery account. Click the button below to choose a new password:</p>
+            <p>You recently requested to reset your password for your Pizzo by Raza account. Click the button below to choose a new password:</p>
             <p style="text-align: center;">
               <a href="${resetUrl}" class="btn" target="_blank">Reset Password</a>
             </p>
@@ -300,7 +300,7 @@ class EmailService {
             <p><small>This password reset link is valid for 1 hour only. If you did not request this, you can safely ignore this email.</small></p>
           </div>
           <div class="footer">
-            &copy; ${new Date().getFullYear()} Pizza Delivery Inc. All rights reserved.
+            &copy; ${new Date().getFullYear()} Pizzo by Raza. All rights reserved.
           </div>
         </div>
       </body>
@@ -309,7 +309,7 @@ class EmailService {
 
     return this.sendMail({
       to: email,
-      subject: 'Reset Your Password — Pizza Delivery',
+      subject: 'Reset Your Password — Pizzo by Raza',
       html: htmlContent,
       text: `Hello ${name}. Reset your password by opening: ${resetUrl}`
     });
