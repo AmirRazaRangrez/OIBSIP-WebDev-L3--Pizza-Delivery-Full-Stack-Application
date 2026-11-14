@@ -10,6 +10,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [resendNotice, setResendNotice] = useState('');
+  const [activeToken, setActiveToken] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
@@ -41,7 +42,8 @@ export default function Login() {
     setError('');
     setResendNotice('');
     try {
-      await api.resendVerification(email);
+      const res = await api.resendVerification(email);
+      setActiveToken(res.emailVerificationToken || null);
       setResendNotice(`A fresh verification link has been sent to ${email}. Please check your email inbox and spam folder.`);
     } catch (err) {
       setError(err.message || 'Could not send verification email.');
@@ -65,13 +67,26 @@ export default function Login() {
             padding: '14px 16px',
             borderRadius: 'var(--radius-md)',
             marginBottom: '20px',
-            fontSize: '13px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
+            fontSize: '13px'
           }}>
-            <CheckCircle size={16} />
-            <span>{resendNotice}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: activeToken ? '10px' : '0' }}>
+              <CheckCircle size={16} />
+              <span>{resendNotice}</span>
+            </div>
+            {activeToken && (
+              <div style={{ borderTop: '1px solid rgba(17, 166, 89, 0.25)', paddingTop: '10px', marginTop: '6px' }}>
+                <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '8px' }}>
+                  Testing locally or waiting for email? You can also activate your account instantly below:
+                </p>
+                <Link
+                  to={`/verify-email?token=${activeToken}`}
+                  className="btn btn-primary btn-sm"
+                  style={{ display: 'inline-flex', width: '100%', justifyContent: 'center' }}
+                >
+                  Activate Account Now (Instant) →
+                </Link>
+              </div>
+            )}
           </div>
         )}
 
